@@ -27,10 +27,6 @@ This package can be installed from source by running::
     python setup.py build
     python setup.py install
 
-Or, you can install the latest stable release from PyPI::
-
-    pip install mdns-publisher
-
 RUNNING
 -------
 
