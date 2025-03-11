@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# cname_service.py - Publish CNAMEs pointing to the local host over Avahi/mDNS.
+# cname_service.py - Publish CNAME or A reocrds pointing to the local host over Avahi/mDNS.
 #
 # Copyright (c) 2014, SAPO
 #
@@ -62,10 +62,10 @@ def parse_args():
     """Parse and enforce command-line arguments."""
 
     # Disable the automatic "-h/--help" argument to customize its message...
-    parser = ArgumentParser(description="Publish CNAMEs pointing to the local host over Avahi/mDNS.", add_help=False)
+    parser = ArgumentParser(description="Publish CNAME or A records pointing to the local host over Avahi/mDNS.", add_help=False)
 
-    parser.add_argument("cnames", metavar="hostname", nargs="+", type=local_hostname_arg,
-                                  help="Fully-qualified CNAME(s) to publish. Subdomains are "
+    parser.add_argument("names", metavar="hostname", nargs="+", type=local_hostname_arg,
+                                  help="Fully-qualified name(s) to publish. Subdomains are "
                                        "allowed, but names must end with the '.local' domain.")
 
     parser.add_argument("-h", "--help", action="help", help="Show the available options and exit.")
@@ -73,6 +73,7 @@ def parse_args():
     parser.add_argument("-d", "--daemon", action="store_true", help="Run the publishing service in the background.")
     parser.add_argument("-f", "--force", action="store_true", help="Do not check for availability before publishing.")
     parser.add_argument("-l", "--log", metavar="log", help="Log messages into 'syslog' or the specified log file.")
+    parser.add_argument("-a", "--dns-type-a", action="store_true", help="Use A records instead of CNAME for Windows compatibility")
     parser.add_argument("-t", "--ttl", metavar="ttl", type=positive_int_arg, default=DEFAULT_DNS_TTL,
                                        help="TTL for published records, in seconds. (Default: %d)" % DEFAULT_DNS_TTL)
 
@@ -167,7 +168,7 @@ def main():
     log.info("Avahi/mDNS publisher starting...")
 
     if args.force:
-        log.info("Forcing CNAME publishing without collision checks")
+        log.info("Forcing publishing without collision checks")
 
     # The publisher needs to be initialized in the loop, to handle disconnects...
     publisher = None
@@ -184,16 +185,16 @@ def main():
             signal.signal(signal.SIGINT, functools.partial(handle_signals, publisher))
             signal.signal(signal.SIGQUIT, functools.partial(handle_signals, publisher))
 
-            for cname in args.cnames:
-                status = publisher.publish_cname(cname, args.force)
+            for cname in args.names:
+                status = publisher.publish(cname, args.force, 'A' if args.dns_type_a else 'CNAME')
                 if not status:
                     log.error("Failed to publish '%s'", cname)
                     continue
 
-            if publisher.count() == len(args.cnames):
-                log.info("All CNAMEs published")
+            if publisher.count() == len(args.names):
+                log.info("All names published")
             else:
-                log.warning("%d out of %d CNAMEs published", publisher.count(), len(args.cnames))
+                log.warning("%d out of %d names published", publisher.count(), len(args.names))
 
         # CNAMEs will exist while this service is kept alive,
         # but we don't actually need to do anything useful...
