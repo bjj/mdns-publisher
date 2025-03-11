@@ -25,6 +25,7 @@ manifest = {
     ],
     "install_requires": [
         "dbus-python >= 1.1",
+        "netifaces",
     ],
     "scripts": [
         "mdns-publish-cname",
