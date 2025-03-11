@@ -1,9 +1,12 @@
 ABOUT
 -----
 
-This service/library publishes CNAME records pointing to the local host over multicast DNS using the **Avahi** daemon found in all major Linux distributions. Useful as a poor-man's service discovery or as a helper for named virtual-hosts in development environments.
+This service/library publishes CNAME or A records pointing to the local host over multicast DNS using the **Avahi** daemon found in all major Linux distributions. Useful as a poor-man's service discovery or as a helper for named virtual-hosts in development environments.
 
-Since Avahi is compatible with Apple's Bonjour, these names are usable from MacOS X and Windows too.
+Since Avahi is compatible with Apple's Bonjour, these names are also usable from MacOS X.
+
+Windows understands mDNS, but not CNAME records. For Windows compatibility, use A records instead, which work with
+all platforms.
 
 See also:
 
@@ -28,20 +31,20 @@ Or, you can install the latest stable release from PyPI::
 
     pip install mdns-publisher
 
-**Note:** If you're using Python 2.7 and you get errors installing ``dbus-python``, you may need to upgrade your ``pip`` version::
-
-    pip install --upgrade pip
-
 RUNNING
 -------
 
-Pass (one or more) CNAMEs as command-line arguments to ``mdns-publish-cname``::
+Pass (one or more) names as command-line arguments to ``mdns-publish-cname``::
 
     mdns-publish-cname name01.local name02.local
 
 Names must use the ``.local`` domain but can have arbitrary sub-domains::
 
     mdns-publish-cname name01.local name02.local name03.mysubdomain.local
+
+Use the `-a` flag to create A records for Windows compatibility:
+
+    mdns-publish-cname -a name01.local name02.local
 
 If the server running ``mdns-publish-cname`` is being announced over mDNS as ``myserver.local``, all of these names will be answered by Avahi as CNAMEs for ``myserver.local``, regardless of any sub-domains they might have. They remain available as long as ``mdns-publish-cname`` is running.
 
